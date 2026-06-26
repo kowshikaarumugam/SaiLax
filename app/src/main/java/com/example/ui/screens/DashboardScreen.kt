@@ -45,9 +45,11 @@ fun DashboardScreen(
     val logs by viewModel.allLogs.collectAsState()
     val streaks by viewModel.allStreaks.collectAsState()
     val userName by viewModel.userName.collectAsState()
+    val userEmail by viewModel.userEmail.collectAsState()
 
     var activeTab by remember { mutableStateOf(0) } // 0: Alarms, 1: Streaks, 2: History
     var showAddDialog by remember { mutableStateOf(false) }
+    var showProfileDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -67,6 +69,13 @@ fun DashboardScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { showProfileDialog = true }) {
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = "My Profile",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                     IconButton(onClick = { viewModel.logout() }) {
                         Icon(
                             imageVector = Icons.Default.Logout,
@@ -160,6 +169,160 @@ fun DashboardScreen(
             onSave = { alarm ->
                 viewModel.insertAlarm(alarm)
                 showAddDialog = false
+            }
+        )
+    }
+
+    if (showProfileDialog) {
+        AlertDialog(
+            onDismissRequest = { showProfileDialog = false },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            },
+            title = {
+                Text(
+                    text = "My Accountability Profile",
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Profile Avatar Initial
+                    Box(
+                        modifier = Modifier
+                            .size(72.dp)
+                            .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(36.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (userName.isNotEmpty()) userName.take(1).uppercase() else "U",
+                            style = MaterialTheme.typography.headlineLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = userName.ifEmpty { "Accountability User" },
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = userEmail.ifEmpty { "local.user@ownup.com" },
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+
+                    // Accountability Profile Stats Card
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "Accountability Summary",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Active Alarms", style = MaterialTheme.typography.bodySmall)
+                                Text("${alarms.filter { it.isEnabled }.size} / ${alarms.size}", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall)
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Total Habit Streaks", style = MaterialTheme.typography.bodySmall)
+                                Text("${streaks.size} tracked", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall)
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Completed Proofs", style = MaterialTheme.typography.bodySmall)
+                                Text("${logs.size} uploaded", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall)
+                            }
+                        }
+                    }
+
+                    // Cloud state info
+                    val isConnected by com.example.data.firebase.FirebaseManager.isFirebaseConnected.collectAsState()
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                if (isConnected) Color(0xFF10B981).copy(alpha = 0.1f)
+                                else MaterialTheme.colorScheme.error.copy(alpha = 0.1f),
+                                RoundedCornerShape(8.dp)
+                            )
+                            .padding(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = if (isConnected) Icons.Default.CloudQueue else Icons.Default.CloudOff,
+                            contentDescription = null,
+                            tint = if (isConnected) Color(0xFF10B981) else MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = if (isConnected) "Active Firebase Cloud Session" else "Local-Only Profile Mode",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isConnected) Color(0xFF10B981) else MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showProfileDialog = false }
+                ) {
+                    Text("Close")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showProfileDialog = false
+                        viewModel.logout()
+                    }
+                ) {
+                    Text("Sign Out", color = MaterialTheme.colorScheme.error)
+                }
             }
         )
     }

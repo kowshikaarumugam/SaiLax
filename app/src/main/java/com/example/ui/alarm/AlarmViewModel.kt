@@ -114,7 +114,9 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
 
     fun insertAlarm(alarm: Alarm) {
         viewModelScope.launch {
-            val id = alarmRepo.insertAlarm(alarm)
+            val id = withContext(Dispatchers.IO) {
+                alarmRepo.insertAlarm(alarm)
+            }
             val savedAlarm = alarm.copyWithId(id.toInt())
             if (savedAlarm.isEnabled) {
                 AlarmScheduler.scheduleAlarm(getApplication(), savedAlarm)
@@ -124,7 +126,9 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
 
     fun updateAlarm(alarm: Alarm) {
         viewModelScope.launch {
-            alarmRepo.updateAlarm(alarm)
+            withContext(Dispatchers.IO) {
+                alarmRepo.updateAlarm(alarm)
+            }
             if (alarm.isEnabled) {
                 AlarmScheduler.scheduleAlarm(getApplication(), alarm)
             } else {
@@ -135,7 +139,9 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
 
     fun deleteAlarm(alarm: Alarm) {
         viewModelScope.launch {
-            alarmRepo.deleteAlarm(alarm)
+            withContext(Dispatchers.IO) {
+                alarmRepo.deleteAlarm(alarm)
+            }
             AlarmScheduler.cancelAlarm(getApplication(), alarm)
         }
     }
@@ -143,7 +149,9 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     fun toggleAlarm(alarm: Alarm) {
         viewModelScope.launch {
             val updated = alarm.copyWithIsEnabled(!alarm.isEnabled)
-            alarmRepo.updateAlarm(updated)
+            withContext(Dispatchers.IO) {
+                alarmRepo.updateAlarm(updated)
+            }
             if (updated.isEnabled) {
                 AlarmScheduler.scheduleAlarm(getApplication(), updated)
             } else {
@@ -154,7 +162,9 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
 
     fun clearHistory() {
         viewModelScope.launch {
-            proofRepo.clearLogs()
+            withContext(Dispatchers.IO) {
+                proofRepo.clearLogs()
+            }
         }
     }
 
@@ -200,17 +210,19 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
             val status = if (result.verified) "PASSED" else "FAILED"
 
             // Save in DB and update streaks
-            proofRepo.logProofAndUpdateStreak(
-                alarm.id,
-                alarm.taskType,
-                alarm.taskDetails,
-                status,
-                result.reason,
-                gpsLat,
-                gpsLng,
-                result.confidence,
-                photoPath
-            )
+            withContext(Dispatchers.IO) {
+                proofRepo.logProofAndUpdateStreak(
+                    alarm.id,
+                    alarm.taskType,
+                    alarm.taskDetails,
+                    status,
+                    result.reason,
+                    gpsLat,
+                    gpsLng,
+                    result.confidence,
+                    photoPath
+                )
+            }
 
             _isVerifying.value = false
             if (result.verified) {

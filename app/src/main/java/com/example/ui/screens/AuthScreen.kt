@@ -609,38 +609,73 @@ fun AuthScreen(
                             }
 
                             // LOGIN IMPLEMENTATION
-                            val registeredEmail = sharedPrefs.getString("reg_email_$email", null)
-                            val registeredPassword = sharedPrefs.getString("reg_pwd_$email", null)
-                            val registeredName = sharedPrefs.getString("reg_name_$email", null)
-
-                            // Default account fallback for easy evaluation
-                            val defaultEmail = "kowshikaarumugam2005@gmail.com"
-                            val isDefaultLogin = email == defaultEmail && password == "OwnUp2026!"
-
-                            if ((registeredEmail != null && registeredPassword == password) || isDefaultLogin) {
-                                // Reset failed attempts on success
-                                failedAttempts = 0
-                                sharedPrefs.edit().putInt("failed_attempts", 0).putLong("lockout_timestamp", 0L).apply()
-
-                                val activeName = registeredName ?: "Kowshika"
-                                uiSuccessMsg = "Login successful! Redirecting..."
-                                coroutineScope.launch {
-                                    delay(1200)
-                                    onAuthenticated(email, activeName)
-                                }
+                            val isFirebaseActive = com.example.data.firebase.FirebaseManager.isFirebaseAvailable()
+                            if (isFirebaseActive) {
+                                uiSuccessMsg = "Authenticating with Cloud..."
+                                com.google.firebase.auth.FirebaseAuth.getInstance()
+                                    .signInWithEmailAndPassword(email, password)
+                                    .addOnCompleteListener { task ->
+                                        if (task.isSuccessful) {
+                                            failedAttempts = 0
+                                            sharedPrefs.edit().putInt("failed_attempts", 0).putLong("lockout_timestamp", 0L).apply()
+                                            
+                                            val firebaseUser = task.result?.user
+                                            val activeName = firebaseUser?.displayName ?: email.substringBefore("@")
+                                            
+                                            // Save locally for persistence
+                                            sharedPrefs.edit()
+                                                .putString("reg_email_${email.lowercase()}", email.lowercase())
+                                                .putString("reg_name_${email.lowercase()}", activeName)
+                                                .putString("reg_pwd_${email.lowercase()}", password)
+                                                .apply()
+                                                
+                                            uiSuccessMsg = "Login successful! Redirecting..."
+                                            coroutineScope.launch {
+                                                delay(1200)
+                                                onAuthenticated(email, activeName)
+                                            }
+                                        } else {
+                                            val currentFailed = failedAttempts + 1
+                                            failedAttempts = currentFailed
+                                            sharedPrefs.edit().putInt("failed_attempts", currentFailed).apply()
+                                            
+                                            uiErrorMsg = task.exception?.localizedMessage ?: "Invalid email or password."
+                                        }
+                                    }
                             } else {
-                                // Increment failed attempts
-                                val currentFailed = failedAttempts + 1
-                                failedAttempts = currentFailed
-                                sharedPrefs.edit().putInt("failed_attempts", currentFailed).apply()
+                                // Default account fallback for easy evaluation
+                                val registeredEmail = sharedPrefs.getString("reg_email_$email", null)
+                                val registeredPassword = sharedPrefs.getString("reg_pwd_$email", null)
+                                val registeredName = sharedPrefs.getString("reg_name_$email", null)
 
-                                if (currentFailed >= 5) {
-                                    val now = System.currentTimeMillis()
-                                    lockoutTimestamp = now
-                                    sharedPrefs.edit().putLong("lockout_timestamp", now).apply()
-                                    uiErrorMsg = "Too many failed attempts. Account locked for 15 minutes."
+                                val defaultEmail = "kowshikaarumugam2005@gmail.com"
+                                val isDefaultLogin = email == defaultEmail && password == "OwnUp2026!"
+
+                                if ((registeredEmail != null && registeredPassword == password) || isDefaultLogin) {
+                                    // Reset failed attempts on success
+                                    failedAttempts = 0
+                                    sharedPrefs.edit().putInt("failed_attempts", 0).putLong("lockout_timestamp", 0L).apply()
+
+                                    val activeName = registeredName ?: "Kowshika"
+                                    uiSuccessMsg = "Login successful! Redirecting..."
+                                    coroutineScope.launch {
+                                        delay(1200)
+                                        onAuthenticated(email, activeName)
+                                    }
                                 } else {
-                                    uiErrorMsg = "Invalid email or password."
+                                    // Increment failed attempts
+                                    val currentFailed = failedAttempts + 1
+                                    failedAttempts = currentFailed
+                                    sharedPrefs.edit().putInt("failed_attempts", currentFailed).apply()
+
+                                    if (currentFailed >= 5) {
+                                        val now = System.currentTimeMillis()
+                                        lockoutTimestamp = now
+                                        sharedPrefs.edit().putLong("lockout_timestamp", now).apply()
+                                        uiErrorMsg = "Too many failed attempts. Account locked for 15 minutes."
+                                    } else {
+                                        uiErrorMsg = "Invalid email or password."
+                                    }
                                 }
                             }
                         },
@@ -886,19 +921,63 @@ fun AuthScreen(
                         Button(
                             onClick = {
                                 if (otpInput.trim() == simulatedOtpCode) {
-                                    // Save registered user
-                                    sharedPrefs.edit()
-                                        .putString("reg_email_${verificationEmailSent.lowercase()}", verificationEmailSent.lowercase())
-                                        .putString("reg_name_${verificationEmailSent.lowercase()}", verificationNameRegistered)
-                                        .putString("reg_pwd_${verificationEmailSent.lowercase()}", verificationPasswordRegistered)
-                                        .apply()
+                                    val isFirebaseActive = com.example.data.firebase.FirebaseManager.isFirebaseAvailable()
+                                    if (isFirebaseActive) {
+                                        verificationSuccessMsg = "Registering with Cloud..."
+                                        com.google.firebase.auth.FirebaseAuth.getInstance()
+                                            .createUserWithEmailAndPassword(verificationEmailSent, verificationPasswordRegistered)
+                                            .addOnCompleteListener { task ->
+                                                if (task.isSuccessful) {
+                                                    val firebaseUser = task.result?.user
+                                                    val profileUpdates = com.google.firebase.auth.UserProfileChangeRequest.Builder()
+                                                        .setDisplayName(verificationNameRegistered)
+                                                        .build()
+                                                    firebaseUser?.updateProfile(profileUpdates)
 
-                                    verificationSuccessMsg = "Account activated automatically! Logging in..."
-                                    coroutineScope.launch {
-                                        delay(1500)
-                                        showVerificationOverlay = false
-                                        // Auto authenticates and loads
-                                        onAuthenticated(verificationEmailSent, verificationNameRegistered)
+                                                    // Save locally for persistence
+                                                    sharedPrefs.edit()
+                                                        .putString("reg_email_${verificationEmailSent.lowercase()}", verificationEmailSent.lowercase())
+                                                        .putString("reg_name_${verificationEmailSent.lowercase()}", verificationNameRegistered)
+                                                        .putString("reg_pwd_${verificationEmailSent.lowercase()}", verificationPasswordRegistered)
+                                                        .apply()
+
+                                                    // Write user profile to Firestore document users/{userId}
+                                                    try {
+                                                        val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                                                        val userMap = mapOf(
+                                                            "email" to verificationEmailSent,
+                                                            "name" to verificationNameRegistered,
+                                                            "createdAt" to com.google.firebase.Timestamp.now()
+                                                        )
+                                                        db.collection("users").document(firebaseUser?.uid ?: "").set(userMap)
+                                                    } catch (e: Exception) {
+                                                        // Fallback logging
+                                                    }
+
+                                                    verificationSuccessMsg = "Account activated and synced to cloud! Logging in..."
+                                                    coroutineScope.launch {
+                                                        delay(1500)
+                                                        showVerificationOverlay = false
+                                                        onAuthenticated(verificationEmailSent, verificationNameRegistered)
+                                                    }
+                                                } else {
+                                                    otpError = task.exception?.localizedMessage ?: "Failed to create Firebase user"
+                                                }
+                                            }
+                                    } else {
+                                        // Save registered user locally
+                                        sharedPrefs.edit()
+                                            .putString("reg_email_${verificationEmailSent.lowercase()}", verificationEmailSent.lowercase())
+                                            .putString("reg_name_${verificationEmailSent.lowercase()}", verificationNameRegistered)
+                                            .putString("reg_pwd_${verificationEmailSent.lowercase()}", verificationPasswordRegistered)
+                                            .apply()
+
+                                        verificationSuccessMsg = "Account activated automatically! Logging in..."
+                                        coroutineScope.launch {
+                                            delay(1500)
+                                            showVerificationOverlay = false
+                                            onAuthenticated(verificationEmailSent, verificationNameRegistered)
+                                        }
                                     }
                                 } else {
                                     otpError = "Incorrect OTP. Please enter the correct code."
@@ -979,11 +1058,28 @@ fun AuthScreen(
                             return@Button
                         }
 
-                        // Simulation of successfully generating/sending reset password link
-                        forgotPasswordSuccess = "A secure reset link has been sent to $email. Valid for 15 minutes."
-                        coroutineScope.launch {
-                            delay(2500)
-                            showForgotPasswordDialog = false
+                        val isFirebaseActive = com.example.data.firebase.FirebaseManager.isFirebaseAvailable()
+                        if (isFirebaseActive) {
+                            com.google.firebase.auth.FirebaseAuth.getInstance()
+                                .sendPasswordResetEmail(email)
+                                .addOnCompleteListener { task ->
+                                    if (task.isSuccessful) {
+                                        forgotPasswordSuccess = "A secure reset link has been sent to $email. Valid for 15 minutes."
+                                        coroutineScope.launch {
+                                            delay(2500)
+                                            showForgotPasswordDialog = false
+                                        }
+                                    } else {
+                                        forgotPasswordError = task.exception?.localizedMessage ?: "Failed to send reset email."
+                                    }
+                                }
+                        } else {
+                            // Simulation of successfully generating/sending reset password link
+                            forgotPasswordSuccess = "A secure reset link has been sent to $email. Valid for 15 minutes."
+                            coroutineScope.launch {
+                                delay(2500)
+                                showForgotPasswordDialog = false
+                            }
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF59E0B), contentColor = Color(0xFF0F172A))
