@@ -3,7 +3,23 @@
   "cleanUrls": true,
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/ownup.apk",
+      "destination": "/ownup.apk"
+    },
+    {
+      "source": "/manifest.json",
+      "destination": "/manifest.json"
+    },
+    {
+      "source": "/service-worker.js",
+      "destination": "/service-worker.js"
+    },
+    {
+      "source": "/icon.png",
+      "destination": "/icon.png"
+    },
+    {
+      "source": "/((?!api|ownup\\.apk|manifest\\.json|service-worker\\.js|icon\\.png|.*\\..*$).*)",
       "destination": "/index.html"
     }
   ]

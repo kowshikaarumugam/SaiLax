@@ -4,6 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OwnUp - Own Your Morning, Own Your Day</title>
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#6366F1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(reg => console.log('Service Worker registered successfully!', reg))
+                    .catch(err => console.log('Service Worker registration failed: ', err));
+            });
+        }
+    </script>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -389,7 +406,7 @@
                 </p>
 
                 <div class="pt-4">
-                    <a href="https://github.com/kowshikaarumugam2005/OwnUp/releases" target="_blank" class="glow-effect inline-flex items-center justify-center px-10 py-5 rounded-2xl text-lg font-bold bg-indigo-600 text-white shadow-xl shadow-indigo-600/30 hover:scale-102 transition duration-300">
+                    <a href="/ownup.apk" download="ownup.apk" class="glow-effect inline-flex items-center justify-center px-10 py-5 rounded-2xl text-lg font-bold bg-indigo-600 text-white shadow-xl shadow-indigo-600/30 hover:scale-102 transition duration-300">
                         Download OwnUp APK
                         <svg class="w-6 h-6 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     </a>

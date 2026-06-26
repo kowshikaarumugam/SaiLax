@@ -1,0 +1,24 @@
+{
+  "name": "OwnUp - Own Your Morning, Own Your Day",
+  "short_name": "OwnUp",
+  "description": "AI-verified alarm routine engine to build true self-discipline and secure morning productivity goals.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F0E17",
+  "theme_color": "#6366F1",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
