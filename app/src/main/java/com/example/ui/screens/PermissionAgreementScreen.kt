@@ -268,6 +268,21 @@ fun PermissionAgreementScreen(
                 Text("GRANT MISSING PERMISSIONS", fontWeight = FontWeight.Bold)
             }
         }
+
+        if (!allPermissionsGranted) {
+            Spacer(modifier = Modifier.height(12.dp))
+            TextButton(
+                onClick = onAllGranted,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "PROCEED IN COMPATIBILITY MODE (LITE)",
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = 1.sp
+                )
+            }
+        }
     }
 }
 

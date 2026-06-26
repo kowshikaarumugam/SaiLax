@@ -41,6 +41,7 @@ class MainActivity : ComponentActivity() {
                 val focusModeState by viewModel.focusModeState.collectAsState()
 
                 // Dynamic permission checking
+                var hasUserBypassedPermissions by remember { mutableStateOf(false) }
                 var hasGrantedAllPermissions by remember { mutableStateOf(false) }
                 val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -48,7 +49,9 @@ class MainActivity : ComponentActivity() {
                 DisposableEffect(lifecycleOwner) {
                     val observer = LifecycleEventObserver { _, event ->
                         if (event == Lifecycle.Event.ON_RESUME) {
-                            hasGrantedAllPermissions = areAllPermissionsGranted()
+                            if (!hasUserBypassedPermissions) {
+                                hasGrantedAllPermissions = areAllPermissionsGranted()
+                            }
                         }
                     }
                     lifecycleOwner.lifecycle.addObserver(observer)
@@ -84,6 +87,7 @@ class MainActivity : ComponentActivity() {
                         !hasGrantedAllPermissions -> {
                             PermissionAgreementScreen(
                                 onAllGranted = {
+                                    hasUserBypassedPermissions = true
                                     hasGrantedAllPermissions = true
                                 },
                                 modifier = Modifier.padding(innerPadding)

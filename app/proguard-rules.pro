@@ -12,10 +12,28 @@
 #   public *;
 #}
 
+# Keep model classes used by Room and Moshi
+-keep class com.example.data.model.** { *; }
+
+# Keep database and DAO interfaces
+-keep class com.example.data.database.** { *; }
+-keep class com.example.data.dao.** { *; }
+
+# Firebase-specific ProGuard rules
+-keep class com.google.firebase.** { *; }
+-keep class com.google.android.gms.** { *; }
+
+# Moshi rules
+-keep class com.squareup.moshi.** { *; }
+-dontwarn com.squareup.moshi.**
+
+# Keep BuildConfig
+-keep class com.example.BuildConfig { *; }
+
 # Uncomment this to preserve the line number information for
 # debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+-keepattributes SourceFile,LineNumberTable
 
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
-#-renamesourcefileattribute SourceFile
+-renamesourcefileattribute SourceFile
