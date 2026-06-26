@@ -1,0 +1,6 @@
+{
+  "name": "OwnUp",
+  "description": "Own your morning, own your day. A smart proof-based alarm app that requires photo proof (analyzed by Gemini AI) and GPS location to stop alarms, helping you wake up and build habits.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
