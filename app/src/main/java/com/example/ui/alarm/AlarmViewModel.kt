@@ -115,7 +115,7 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
     fun insertAlarm(alarm: Alarm) {
         viewModelScope.launch {
             val id = alarmRepo.insertAlarm(alarm)
-            val savedAlarm = alarm.copy(id = id.toInt())
+            val savedAlarm = alarm.copyWithId(id.toInt())
             if (savedAlarm.isEnabled) {
                 AlarmScheduler.scheduleAlarm(getApplication(), savedAlarm)
             }
@@ -142,7 +142,7 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
 
     fun toggleAlarm(alarm: Alarm) {
         viewModelScope.launch {
-            val updated = alarm.copy(isEnabled = !alarm.isEnabled)
+            val updated = alarm.copyWithIsEnabled(!alarm.isEnabled)
             alarmRepo.updateAlarm(updated)
             if (updated.isEnabled) {
                 AlarmScheduler.scheduleAlarm(getApplication(), updated)
@@ -188,26 +188,28 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
                 null
             }
 
-            val result = com.example.data.api.GeminiClient.verifyPhotoProof(
-                base64Photo = base64Photo,
-                taskType = alarm.taskType,
-                taskDetails = alarm.taskDetails,
-                base64ReferencePhoto = base64ReferencePhoto
-            )
+            val result = withContext(Dispatchers.IO) {
+                com.example.data.api.GeminiClient.verifyPhotoProof(
+                    base64Photo,
+                    alarm.taskType,
+                    alarm.taskDetails,
+                    base64ReferencePhoto
+                )
+            }
 
             val status = if (result.verified) "PASSED" else "FAILED"
 
             // Save in DB and update streaks
             proofRepo.logProofAndUpdateStreak(
-                alarmId = alarm.id,
-                taskType = alarm.taskType,
-                taskDetails = alarm.taskDetails,
-                status = status,
-                reviewNotes = result.reason,
-                gpsLat = gpsLat,
-                gpsLng = gpsLng,
-                confidence = result.confidence,
-                photoPath = photoPath
+                alarm.id,
+                alarm.taskType,
+                alarm.taskDetails,
+                status,
+                result.reason,
+                gpsLat,
+                gpsLng,
+                result.confidence,
+                photoPath
             )
 
             _isVerifying.value = false

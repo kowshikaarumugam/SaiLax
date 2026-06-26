@@ -924,13 +924,19 @@ fun AddAlarmDialog(
                                 }
                                 onSave(
                                     Alarm(
-                                        hour = finalHour,
-                                        minute = minute,
-                                        taskType = taskType,
-                                        taskDetails = taskDetails,
-                                        ringDurationMinutes = ringDurationMinutes,
-                                        activityDurationMinutes = activityDurationMinutes,
-                                        referencePhotoPath = referencePhotoPath
+                                        0,
+                                        finalHour,
+                                        minute,
+                                        taskType,
+                                        taskDetails,
+                                        true,
+                                        "Mon,Tue,Wed,Thu,Fri,Sat,Sun",
+                                        null,
+                                        true,
+                                        "",
+                                        ringDurationMinutes,
+                                        activityDurationMinutes,
+                                        referencePhotoPath
                                     )
                                 )
                             },

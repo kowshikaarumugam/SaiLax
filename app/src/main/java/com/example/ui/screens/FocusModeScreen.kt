@@ -385,11 +385,19 @@ fun FocusModeScreen(
                             onClick = {
                                 if (base64Photo != null) {
                                     val alarm = Alarm(
-                                        id = focusState.alarmId,
-                                        hour = 0, minute = 0,
-                                        taskType = focusState.taskType,
-                                        taskDetails = focusState.taskDetails,
-                                        referencePhotoPath = focusState.referencePhotoPath
+                                        focusState.alarmId,
+                                        0,
+                                        0,
+                                        focusState.taskType,
+                                        focusState.taskDetails,
+                                        true,
+                                        "Mon,Tue,Wed,Thu,Fri,Sat,Sun",
+                                        null,
+                                        true,
+                                        "",
+                                        5,
+                                        30,
+                                        focusState.referencePhotoPath
                                     )
                                     viewModel.verifyProofPhoto(
                                         alarm = alarm,
