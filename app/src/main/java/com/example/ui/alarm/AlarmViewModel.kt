@@ -92,8 +92,20 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         AlarmStateHolder.stopRinging()
     }
 
-    fun startFocusMode(alarmId: Int, durationMinutes: Int, taskType: String, taskDetails: String) {
-        AlarmStateHolder.startFocusMode(alarmId, durationMinutes, taskType, taskDetails)
+    fun startFocusMode(
+        alarmId: Int,
+        durationMinutes: Int,
+        taskType: String,
+        taskDetails: String,
+        referencePhotoPath: String? = null
+    ) {
+        AlarmStateHolder.startFocusMode(
+            alarmId,
+            durationMinutes,
+            taskType,
+            taskDetails,
+            referencePhotoPath
+        )
     }
 
     fun clearFocusMode() {

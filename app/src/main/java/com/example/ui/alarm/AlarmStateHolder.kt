@@ -20,13 +20,22 @@ object AlarmStateHolder {
         _ringingAlarm.value = null
     }
 
-    fun startFocusMode(alarmId: Int, durationMinutes: Int, taskType: String, taskDetails: String) {
-        val endTime = System.currentTimeMillis() + (durationMinutes * 60 * 1000)
+    fun startFocusMode(
+        alarmId: Int,
+        durationMinutes: Int,
+        taskType: String,
+        taskDetails: String,
+        referencePhotoPath: String? = null
+    ) {
+        val totalMillis = durationMinutes * 60 * 1000L
+        val endTime = System.currentTimeMillis() + totalMillis
         _focusModeState.value = FocusState(
             alarmId = alarmId,
             endTimeMillis = endTime,
+            totalDurationMillis = totalMillis.coerceAtLeast(1000L),
             taskType = taskType,
-            taskDetails = taskDetails
+            taskDetails = taskDetails,
+            referencePhotoPath = referencePhotoPath
         )
     }
 
@@ -38,6 +47,8 @@ object AlarmStateHolder {
 data class FocusState(
     val alarmId: Int,
     val endTimeMillis: Long,
+    val totalDurationMillis: Long,
     val taskType: String,
-    val taskDetails: String
+    val taskDetails: String,
+    val referencePhotoPath: String? = null
 )

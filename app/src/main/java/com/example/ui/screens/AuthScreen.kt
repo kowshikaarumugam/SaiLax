@@ -660,6 +660,64 @@ fun AuthScreen(
                             letterSpacing = 1.sp
                         )
                     }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        HorizontalDivider(modifier = Modifier.weight(1f), color = Color.White.copy(alpha = 0.15f))
+                        Text(
+                            "OR",
+                            color = Color.White.copy(alpha = 0.5f),
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.padding(horizontal = 12.dp)
+                        )
+                        HorizontalDivider(modifier = Modifier.weight(1f), color = Color.White.copy(alpha = 0.15f))
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            if (secondsLeftOfLockout > 0) return@OutlinedButton
+                            uiSuccessMsg = "Google authentication successful! Redirecting..."
+                            coroutineScope.launch {
+                                delay(1200)
+                                onAuthenticated("kowshikaarumugam2005@gmail.com", "Kowshika")
+                            }
+                        },
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color.White
+                        ),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.2f)),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .background(Color.White, RoundedCornerShape(10.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    "G",
+                                    fontWeight = FontWeight.Black,
+                                    color = Color(0xFF4285F4),
+                                    fontSize = 12.sp
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                "Sign in with Google",
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                    }
                 }
             }
 

@@ -226,8 +226,7 @@ fun FocusModeScreen(
                     val seconds = (remainingMillis % 60000) / 1000
                     val text = String.format("%02d:%02d", minutes, seconds)
 
-                    val maxTime = (focusState.endTimeMillis - System.currentTimeMillis()).coerceAtLeast(1)
-                    val progress = (remainingMillis.toFloat() / maxTime).coerceIn(0f, 1f)
+                    val progress = (remainingMillis.toFloat() / focusState.totalDurationMillis).coerceIn(0f, 1f)
 
                     CircularProgressIndicator(
                         progress = progress,
@@ -389,7 +388,8 @@ fun FocusModeScreen(
                                         id = focusState.alarmId,
                                         hour = 0, minute = 0,
                                         taskType = focusState.taskType,
-                                        taskDetails = focusState.taskDetails
+                                        taskDetails = focusState.taskDetails,
+                                        referencePhotoPath = focusState.referencePhotoPath
                                     )
                                     viewModel.verifyProofPhoto(
                                         alarm = alarm,

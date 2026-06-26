@@ -127,6 +127,12 @@ fun DashboardScreen(
                     text = { Text("AI History") },
                     icon = { Icon(Icons.Default.History, null) }
                 )
+                Tab(
+                    selected = activeTab == 3,
+                    onClick = { activeTab = 3 },
+                    text = { Text("AI Hub") },
+                    icon = { Icon(Icons.Default.AutoAwesome, null) }
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -142,6 +148,7 @@ fun DashboardScreen(
                     )
                     1 -> StreaksTabContent(streaks = streaks)
                     2 -> HistoryTabContent(logs = logs)
+                    3 -> AIHubScreen(viewModel = viewModel)
                 }
             }
         }

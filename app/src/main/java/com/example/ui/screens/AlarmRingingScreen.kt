@@ -393,7 +393,8 @@ fun AlarmRingingScreen(
                                     alarmId = alarm.id,
                                     durationMinutes = alarm.activityDurationMinutes,
                                     taskType = alarm.taskType,
-                                    taskDetails = alarm.taskDetails
+                                    taskDetails = alarm.taskDetails,
+                                    referencePhotoPath = alarm.referencePhotoPath
                                 )
                                 // Shut off ringing state
                                 viewModel.dismissRinging()
